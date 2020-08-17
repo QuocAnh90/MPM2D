@@ -21,9 +21,7 @@ momentumX   = reshape(S.*repmat(mp.*vp(:,1),1,Nn)   ,Np*Nn,1);
 momentumY   = reshape(S.*repmat(mp.*vp(:,2),1,Nn)   ,Np*Nn,1); 
 
 %% Interpolation from particle to grid task
-Node.nmass      = accumarray(Particle.CONNECT(:) ,mass   ,[Node.Count 1]);      
-Node.nmomentum  = accumarray(Particle.CONNECT(:) ,mass   ,[Node.Count 1]);      
-Node.nmomentum  = accumarray(Particle.CONNECT(:) ,mass   ,[Node.Count 1]);      
+Node.nmass  = accumarray(Particle.CONNECT(:) ,mass   ,[Node.Count 1]);      
 
 test = 1;
  

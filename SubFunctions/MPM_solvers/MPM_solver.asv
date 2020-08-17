@@ -4,6 +4,7 @@
 
 function [Particle] = MPM_solver(SolidModel, Cell, Node, Particle, Time, Physics)
 
+%% Initiali
 %% Calculate the value of shape function and gradient of the shape function
 [Particle,Cell] = Compute_Interpolator_MPM(Particle,Cell,Node); 
 

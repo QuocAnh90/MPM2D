@@ -1,7 +1,7 @@
 function [Node,Cell] = Grid_Generation(Node,Cell,x_min,x_max,y_min,y_max)
 %% Generate the structured grid
 % Input
-NN = Node.NN; le = Cell.le;
+NN = [Node.CountX Node.CountY]; le = Cell.size;
 % NN(1): number of nodes in X direction
 % NN(2): number of nodes in Y direction
 % le(1): element size in X direction
@@ -41,7 +41,7 @@ end
 
 %% Nodal variables generation
 Node.Count          = NN(1)*NN(2);                  % total number of nodes
-Node.Coordinate     = LOC;                          % Nodal Coordinate
+Node.x              = LOC;                          % Nodal Coordinate
 Node.nmass          = zeros(Node.Count,1);          % Nodal Mass
 Node.nmomentum      = zeros(Node.Count,2);          % Nodal Momentum
 Node.niforce        = zeros(Node.Count,2);          % Nodal Internal force
@@ -57,4 +57,4 @@ Node.BoundaryY = fbcy;                  % nodal index in the boundary  in Y dire
 
 %% Cell variables generation
 Cell.Count      = (NN(1)-1)*(NN(2)-1);          % total number of elements
-Cell.Coordinate = LOCC;
+Cell.x          = LOCC;

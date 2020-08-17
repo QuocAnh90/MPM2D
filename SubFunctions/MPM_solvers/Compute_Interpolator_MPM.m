@@ -1,33 +1,41 @@
-function [N,dN,CONNECT,pElems,mpoints,NODES] = Compute_Interpolator_MPM(pCount,cellCount,x_p,le,NN,LOC)
+function [Particle,Cell] = Compute_Interpolator_MPM(Particle,Cell,Node)
 
-pElems         = zeros(pCount,1);                             % index of elements where stores particles
-CONNECT_TEMP    = zeros(pCount,4);                            % node 1=leftdown 2=righdown 3=rightup 4= leftup
-NODES           = 4 * ones(pCount,1);                         % Number of interation nodes for each particle
-N_local         = zeros(pCount,4);                            % Value of shape function
-dN_local        = zeros(pCount,8);                            % Value of gradient of shape function
+%% Input
+xp              = Particle.x;                       % Position of particle
+le              = Cell.size;                        % Size of cell
+CellCount       = Cell.Count;                       % Totala number of cells
+xn              = Node.x;                           % Position of nodes
 
- for p = 1:pCount
-%  pElems(p) = ceil(x_p(p,1)/le(1))+(NN(1)-1)*(fix(x_p(p,2)/le(2)));   % compute vector store index elements 
- pElems(p) = floor(x_p(p,1)/le(1)+1)+(NN(1)-1)*(floor(x_p(p,2)/le(2)));
+%% Output
+% Particle.S     % value of shape function
+% Particle.dS    % Value of shape function gradient
+
+%% Calculate the nodal index interacting with particle
+ % Cell index of particle p
+ Particle.Elems = floor(xp(:,1)/le(1)+1)+(Node.CountX-1)*(floor(xp(:,2)/le(2))); 
  
- CONNECT_TEMP(p,1) = pElems(p) + floor(pElems(p)/(NN(1)-1));
- CONNECT_TEMP(p,2) = CONNECT_TEMP(p,1)+1; 
- CONNECT_TEMP(p,3) = CONNECT_TEMP(p,2)+NN(1); 
- CONNECT_TEMP(p,4) = CONNECT_TEMP(p,1)+NN(1);
- CONNECT{p}        = [CONNECT_TEMP(p,1) CONNECT_TEMP(p,2) CONNECT_TEMP(p,3) CONNECT_TEMP(p,4)];
+ % Nodal index of particle p
+ Particle.CONNECT    = Cell.CONNECT(Particle.Elems,:); 
  
-for i = 1:NODES(p)
-     % Compute the shape functions and gradient of the shape functions
-    [N_local(p,i),dN_local(p,i),dN_local(p,i+4)]=linearshape(x_p(p,1:2),LOC(CONNECT_TEMP(p,i),:),le(1),le(2));
-    N{p}(i) = N_local(p,i);    
-    dN{p}(1,i) = dN_local(p,i);
-    dN{p}(2,i) = dN_local(p,i+4);
- end
- end
- 
- % Compute mspoints: index of particles in each element (active element)
- for c =1:cellCount
-     id_p = find(pElems==c);
-     mpoints{c}=id_p;
+%% Calculate value of shape function
+% 1D shape function in X direction
+ xnx        = xn(:,1);   % nodal coordinate in X direction
+ Dx         = (repmat(xp(:,1),1,Particle.Node) - xnx(Particle.CONNECT));  
+ [Sx,dSx]   = linearshape(Dx,le(1));
+
+% 1D shape function in Y direction
+ xny        = xn(:,2);   % nodal coordinate in Y direction
+ Dy         = (repmat(Particle.x(:,2),1,Particle.Node) - xny(Particle.CONNECT));  
+ [Sy,dSy]   = linearshape(Dy,le(2));
+
+% shape function in 2D
+ Particle.S     = Sx.*Sy;
+ Particle.dSx   = dSx.*Sy;
+ Particle.dSy   = dSy.*Sx;
+
+ %% Compute Cell.Particle: index of particles in each cell (active cell)
+ for c =1:CellCount
+     id_p = find(Particle.Elems==c);
+     Cell.Particle{c}=id_p;
  end
  
