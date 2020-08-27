@@ -55,7 +55,7 @@ while sp<Particle.Count+0.0001
 end
 
 %% Plot initial condition
-initial_figure = Plot_Initial(Particle.x,Node.x,Cell.size);
+% initial_figure = Plot_Initial(Particle.x,Node.x,Cell.size);
 
 %% start the algorithm
 % video

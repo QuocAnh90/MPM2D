@@ -42,10 +42,10 @@ end
 %% Nodal variables generation
 Node.Count          = NN(1)*NN(2);                  % total number of nodes
 Node.x              = LOC;                          % Nodal Coordinate
-Node.nmass          = zeros(Node.Count,1);          % Nodal Mass
-Node.nmomentum      = zeros(Node.Count,2);          % Nodal Momentum
-Node.niforce        = zeros(Node.Count,2);          % Nodal Internal force
-Node.neforce        = zeros(Node.Count,2);          % Nodal External force
+Node.mass           = zeros(Node.Count,1);          % Nodal Mass
+Node.momentum       = zeros(Node.Count,2);          % Nodal Momentum
+Node.inForce        = zeros(Node.Count,2);          % Nodal Internal force
+Node.eForce         = zeros(Node.Count,2);          % Nodal External force
 Node.traction       = zeros(Node.Count,2);          % Nodal Traction
 
 % Compute nodal index in the boundary
