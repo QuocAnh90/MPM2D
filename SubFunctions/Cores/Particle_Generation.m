@@ -5,19 +5,23 @@ Count = Particle.Count;
 %% Particle variables
 Particle.size(1)        = Cell.size(1)/sqrt(Particle.PPC);      % size of particle in X direction
 Particle.size(2)        = Cell.size(2)/sqrt(Particle.PPC);      % size of particle in Y direction
+% Scalar
+Particle.volume         = zeros(Count,1);                       % Volume
+% Vector
 Particle.x              = zeros(Count,2);                       % Position
 Particle.d              = zeros(Count,2);                       % Displacement
 Particle.x_ini          = Particle.x;                           % initial position
 Particle.density        = SolidModel.density * ones(Count,1);   % Density
 Particle.body           = [zeros(Count,1) -gravity*ones(Count,1)];    % body force
-Particle.stress         = zeros(Count,3);                       % stress
 Particle.velocity       = zeros(Count,2);                       % velocity
-Particle.strain         = zeros(Count,3);                       % strain
 Particle.traction       = zeros(Count,2);                       % traction
 Particle.defgrad        = cell(Count,2);                        % Deformation gradient
-Particle.volume         = zeros(Count,1);                       % Volume
 Particle.r1             = zeros(Count,2);
 Particle.r2             = zeros(Count,2);
+% Tensor
+Particle.strain         = zeros(Count,4);                       % strain
+Particle.stress         = zeros(Count,4);                       % stress
+Particle.B              = zeros(8,Count,4);                     % B matrix
 
 %% Initial condition
 % Initialize the gradient deformation and vector r1 and r2 (for CPDI)

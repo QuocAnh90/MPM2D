@@ -25,5 +25,4 @@ Node.nmass              = accumarray(Particle.CONNECT(:) ,mass   ,[Node.Count 1]
 Node.nmomentum(:,1)     = accumarray(Particle.CONNECT(:) ,momentumX   ,[Node.Count 1]);      
 Node.nmomentum(:,2)     = accumarray(Particle.CONNECT(:) ,momentumY   ,[Node.Count 1]);      
 
-test = 1;
  
