@@ -16,12 +16,12 @@ SolidModel.nu               = 0.3               ;                   % Poison rat
 Physics.gravity             = 10.0              ;                   % gravity acceleration
 
 %% Structured Grid input
-Node.CountX                = 100;                % number of nodes in X direction
-Node.CountY                = 100;                % number of nodes in Y direction
+Node.CountX                = 6;                % number of nodes in X direction
+Node.CountY                = 5;                % number of nodes in Y direction
 Cell.size(1)               = 0.1;               % size of element in X direction
 Cell.size(2)               = 0.1;               % size of element in Y direction
 % Boundary coordination
-x_min = 1; x_max = 6; y_min = 0; y_max = 6;
+x_min = 0; x_max = 0.5; y_min = 0; y_max = 0.4;
 
 %% Time input
 Time.wavespeed          = sqrt(SolidModel.Young_modul/SolidModel.density);
@@ -30,8 +30,8 @@ Time.timestep           = 0.001;
 RealTime                = 0;
 
 %% Particle input
-Particle.PPC       = 9;                 % Particle Per Cell
-Particle.Count     = 2*150/3*Particle.PPC;   % Total number of particle
+Particle.PPC       = 4;                 % Particle Per Cell
+Particle.Count     = 2*Particle.PPC;   % Total number of particle
 
 %% Grid generation
 [Node,Cell] = Grid_Generation(Node,Cell,x_min,x_max,y_min,y_max);
@@ -46,16 +46,16 @@ Particle.Count     = 2*150/3*Particle.PPC;   % Total number of particle
 % Generate particles
 sp=1;
 while sp<Particle.Count+0.0001
-    for i=1:6
-        for j=1:150
-            Particle.x(sp,1:2)= [2*Cell.size(1)+0.5*Particle.size(1)+(j-1)*Particle.size(1) 8*Cell.size(2)+0.5*Particle.size(2)+(i-1)*Particle.size(2)];
+    for i=1:4
+        for j=1:2
+            Particle.x(sp,1:2)= [2*Cell.size(1)+0.5*Particle.size(1)+(j-1)*Particle.size(1) 1*Cell.size(2)+0.5*Particle.size(2)+(i-1)*Particle.size(2)];
             sp=sp+1;
         end
     end
 end
 
 %% Plot initial condition
-% initial_figure = Plot_Initial(Particle.x,Node.x,Cell.size);
+initial_figure = Plot_Initial(Particle.x,Node.x,Cell.size);
 
 %% start the algorithm
 % video

@@ -34,7 +34,7 @@ xn              = Node.x;                           % Position of nodes
  Particle.dSy   = dSy.*Sx;
  
  % Build B matrix
- i            = 1:2:8-1;
+ i            = 1:2:Particle.Node*2-1;
  j            = i+1;
  Particle.B(i,:,1) = Particle.dSx';
  Particle.B(j,:,2) = Particle.dSy';

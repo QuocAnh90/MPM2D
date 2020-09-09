@@ -19,10 +19,12 @@ Node.inForce(:)     = 0;         % Nodal Internal force
 mass        = reshape(S.*repmat(mp,1,Nn)            ,Np*Nn,1); 
 momentumX   = reshape(S.*repmat(mp.*vp(:,1),1,Nn)   ,Np*Nn,1); 
 momentumY   = reshape(S.*repmat(mp.*vp(:,2),1,Nn)   ,Np*Nn,1); 
-
+inForce     = squeeze(sum(Particle.B.*...
+            repmat(permute(Particle.stress,[3 1 2]),Particle.Node*2,1),3).*...
+            repmat(permute(Particle.volume,[3 1 2]),Particle.Node*2,1));
+        
 %% Interpolation from particle to grid task
 Node.nmass              = accumarray(Particle.CONNECT(:) ,mass   ,[Node.Count 1]);      
 Node.nmomentum(:,1)     = accumarray(Particle.CONNECT(:) ,momentumX   ,[Node.Count 1]);      
 Node.nmomentum(:,2)     = accumarray(Particle.CONNECT(:) ,momentumY   ,[Node.Count 1]);      
-
- 
+% Node.inForce            = 
