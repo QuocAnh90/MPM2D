@@ -53,7 +53,14 @@ while sp<Particle.Count+0.0001
         end
     end
 end
+Particle.velocity = [1 2; 3 4; 5 6; 7 8;
+                     1 2; 3 4; 5 6; 7 8];
 
+Particle.stress   = [1 2 3 4; 5 6 7 8;
+                     1 2 3 4; 5 6 7 8;
+                     1 2 3 4; 5 6 7 8;
+                     1 2 3 4; 5 6 7 8;];
+                 
 %% Plot initial condition
 initial_figure = Plot_Initial(Particle.x,Node.x,Cell.size);
 

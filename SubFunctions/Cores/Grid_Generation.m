@@ -47,6 +47,8 @@ Node.momentum       = zeros(Node.Count,2);          % Nodal Momentum
 Node.inForce        = zeros(Node.Count,2);          % Nodal Internal force
 Node.eForce         = zeros(Node.Count,2);          % Nodal External force
 Node.traction       = zeros(Node.Count,2);          % Nodal Traction
+Node.acceleration   = zeros(Node.Count,2);          % Nodal Acceleration
+Node.velocity       = zeros(Node.Count,2);          % Nodal Velocity
 
 % Compute nodal index in the boundary
 [nfbcx,nfbcy,fbcx,fbcy]=Compute_Boundary_Nodes(Node.Count,LOC,x_max,x_min,y_max,y_min);
