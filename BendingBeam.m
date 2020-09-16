@@ -13,7 +13,7 @@ SolidModel.name = 'Neo_Hookean_Elastic';
 SolidModel.Young_modul      = 1000000           ;                   % Young modulus of solid
 SolidModel.density          = 1050.0            ;                   % solid density
 SolidModel.nu               = 0.3               ;                   % Poison ratio
-Physics.gravity             = 10.0              ;                   % gravity acceleration
+Physics.gravity             = [0 -10]           ;                   % gravity acceleration
 
 %% Structured Grid input
 Node.CountX                = 6;                % number of nodes in X direction
