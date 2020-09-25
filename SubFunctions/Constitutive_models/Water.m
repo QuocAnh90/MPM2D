@@ -8,7 +8,6 @@ K = CModel_parameter(1);
 u = CModel_parameter(2);
 gamma = CModel_parameter(3);
 
-
 % Rate of deformation tensor
 D = dESP;
 

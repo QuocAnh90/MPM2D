@@ -89,13 +89,13 @@ open(writerObj2);
       end
      
      % Update timestep 
-     RealTime = RealTime+dt;
+     RealTime = RealTime+Time.timestep;
  end
 
  %% Generate video of the result
-    Figure=Plot_Final(Particle,Node,Cell);
-    frame2 = getframe(Figure);
-    writeVideo(writerObj2,frame2);
+%     Figure=Plot_Final(Particle,Node,Cell);
+%     frame2 = getframe(Figure);
+%     writeVideo(writerObj2,frame2);
     
     end
     

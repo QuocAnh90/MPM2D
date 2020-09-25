@@ -7,19 +7,21 @@ Particle.size(1)        = Cell.size(1)/sqrt(Particle.PPC);      % size of partic
 Particle.size(2)        = Cell.size(2)/sqrt(Particle.PPC);      % size of particle in Y direction
 % Scalar
 Particle.volume         = zeros(Count,1);                       % Volume
+Particle.volume_ini     = Particle.volume;
 % Vector
 Particle.x              = zeros(Count,2);                       % Position
-Particle.d              = zeros(Count,2);                       % Displacement
+% Particle.d              = zeros(Count,2);                       % Displacement
 Particle.x_ini          = Particle.x;                           % initial position
 Particle.density        = SolidModel.density * ones(Count,1);   % Density
 % Particle.body           = [zeros(Count,1) -gravity*ones(Count,1)];    % body force
 Particle.velocity       = zeros(Count,2);                       % velocity
-Particle.traction       = zeros(Count,2);                       % traction
-Particle.defgrad        = cell(Count,2);                        % Deformation gradient
+Particle.Gradvelocity   = zeros(Count,4);                       % Gradient velocity
+% Particle.traction       = zeros(Count,2);                       % traction
+Particle.defgrad        = zeros(Count,4);                       % Deformation gradient
 Particle.r1             = zeros(Count,2);
 Particle.r2             = zeros(Count,2);
 % Tensor
-Particle.strain         = zeros(Count,4);                       % strain
+% Particle.strain         = zeros(Count,4);                       % strain
 Particle.stress         = zeros(Count,4);                       % stress
 Particle.B              = zeros(8,Count,4);                     % B matrix
 
@@ -28,8 +30,9 @@ Particle.B              = zeros(8,Count,4);                     % B matrix
 for p = 1:Count
     Particle.r1(p,:) = [Particle.size(1)/2 0];
     Particle.r2(p,:) = [0 Particle.size(2)/2];
-    Particle.defgrad{p} = [1 0; 0 1];
 end
+Particle.defgrad = [ones(Count,1) zeros(Count,1) zeros(Count,1) ones(Count,1)];
+Particle.defgrad_Old = Particle.defgrad;
 Particle.r1_ini = Particle.r1;
 Particle.r2_ini = Particle.r1;
 

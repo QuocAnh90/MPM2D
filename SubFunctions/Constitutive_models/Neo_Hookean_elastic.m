@@ -1,16 +1,16 @@
-function [s_sp]=Neo_Hookean_elastic(CModel_parameter,F_sp,J)
+function [Particle]=Neo_Hookean_elastic(SolidModel,Particle)
 
 % This is the hyper-elastic Neo-Hookean model
-
 % Parameter of the model
-E = CModel_parameter(1);
-nu = CModel_parameter(2);
+Lambda = SolidModel.Young_modul*SolidModel.nu/(1+SolidModel.nu)/(1-2*SolidModel.nu);
+Mu     = SolidModel.Young_modul/2/(1+SolidModel.nu);
 
-Lambda = E*nu/(1+nu)/(1-2*nu);
-Mu     = E/2/(1+nu);
-
-SSP = Lambda*log(J)/J*eye(2,2) + Mu/J*(F_sp*F_sp'-eye(2,2));
-        s_sp(1) = SSP(1,1);
-        s_sp(2) = SSP(2,2);
-        s_sp(3) = SSP(1,2);
-        
+% Stress tensor = Lambda*log(J)/J*eye(2,2) + Mu/J*(Defgrad tensor*Defgrad tensor'-eye(2,2));
+Particle.stress(:,1) = Lambda*log(Particle.Jacobian)    +  Mu/Particle.Jacobian*...
+    (Particle.defgrad (:,1).*Particle.defgrad (:,1) + Particle.defgrad (:,2).*Particle.defgrad (:,2) - 1);
+Particle.stress(:,2) =              0                   +  Mu/Particle.Jacobian*...
+    (Particle.defgrad (:,1).*Particle.defgrad (:,3) + Particle.defgrad (:,2).*Particle.defgrad (:,4) - 0); 
+Particle.stress(:,3) =              0                   +  Mu/Particle.Jacobian*...
+    (Particle.defgrad (:,3).*Particle.defgrad (:,1) + Particle.defgrad (:,4).*Particle.defgrad (:,2) - 0); 
+Particle.stress(:,4) =              1                   +  Mu/Particle.Jacobian*...
+    (Particle.defgrad (:,3).*Particle.defgrad (:,3) + Particle.defgrad (:,4).*Particle.defgrad (:,4) - 1); 

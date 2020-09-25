@@ -12,7 +12,8 @@ function [Particle] = MPM_solver(SolidModel, Cell, Node, Particle, Time, Physics
 %% Update solid particle velocity and position
 [Particle] = Update_Particle(Particle,Node,Time);
 
-%% Update particle's stress
-[F_sp,V_sp,s_sp,p_sp] = Update_Stress(CModel,CModel_parameter,...
-    NODES,dt,cellCount,mspoints,CONNECT,nvelo_si,dN,...
-    F_sp,V_spo,m_sp,s_sp,p_sp,V_sp);
+%% Update constitutive model
+ switch SolidModel.name
+            case 'Neo_Hookean_Elastic'
+                [Particle]=Neo_Hookean_elastic(SolidModel,Particle);            
+            end
