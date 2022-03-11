@@ -1,6 +1,7 @@
-function [Particle] = Particle_Generation(Particle,Cell,SolidModel,gravity)
+function [Particle] = Particle_Generation(Particle,Cell,Node,SolidModel,gravity)
 
 Count = Particle.Count;
+DOF = Node.DOF;                 % Number of dimension
 
 %% Particle variables
 Particle.size(1)        = Cell.size(1)/sqrt(Particle.PPC);      % size of particle in X direction
@@ -10,20 +11,20 @@ Particle.volume         = zeros(Count,1);                       % Volume
 Particle.volume_ini     = Particle.volume;
 % Vector
 Particle.x              = zeros(Count,2);                       % Position
-% Particle.d              = zeros(Count,2);                       % Displacement
+% Particle.d              = zeros(Count,2);                     % Displacement
 Particle.x_ini          = Particle.x;                           % initial position
 Particle.density        = SolidModel.density * ones(Count,1);   % Density
 % Particle.body           = [zeros(Count,1) -gravity*ones(Count,1)];    % body force
 Particle.velocity       = zeros(Count,2);                       % velocity
 Particle.Gradvelocity   = zeros(Count,4);                       % Gradient velocity
-% Particle.traction       = zeros(Count,2);                       % traction
+% Particle.traction       = zeros(Count,2);                     % traction
 Particle.defgrad        = zeros(Count,4);                       % Deformation gradient
 Particle.r1             = zeros(Count,2);
 Particle.r2             = zeros(Count,2);
 % Tensor
-% Particle.strain         = zeros(Count,4);                       % strain
-Particle.stress         = zeros(Count,4);                       % stress
-Particle.B              = zeros(8,Count,4);                     % B matrix
+% Particle.strain         = zeros(Count,4);                     % strain
+Particle.stress         = zeros(3,Count);                       % stress
+Particle.B              = zeros(3,DOF * Particle.Node,Count);   % B matrix
 
 %% Initial condition
 % Initialize the gradient deformation and vector r1 and r2 (for CPDI)

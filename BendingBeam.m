@@ -1,6 +1,11 @@
 close all; clear all;
 % Unit: Newton - seconds - metre
 
+addpath('SubFunctions/Cores');
+addpath('SubFunctions/Constitutive_Models');
+addpath('SubFunctions/CPDI_solvers');
+addpath('SubFunctions/MPM_solvers');
+
 %% Please select the versions of MPM!!!!!!!!!!!!!!!!!
 % Original MPM: 'MPM'; % CPDI: 'CPDI'
 Version = 'MPM';
@@ -25,7 +30,7 @@ x_min = 0; x_max = 0.5; y_min = 0; y_max = 0.4;
 
 %% Time input
 Time.wavespeed          = sqrt(SolidModel.Young_modul/SolidModel.density);
-Time.finalTime          = 5;
+Time.finalTime          = 0.001;
 Time.timestep           = 0.001;
 RealTime                = 0;
 
@@ -41,7 +46,7 @@ Particle.Count     = 2*Particle.PPC;   % Total number of particle
 
 %% Particle generation
 % Create variables
-[Particle] = Particle_Generation(Particle,Cell,SolidModel,Physics.gravity);
+[Particle] = Particle_Generation(Particle,Cell,Node,SolidModel,Physics.gravity);
 
 % Generate particles
 sp=1;
@@ -56,10 +61,17 @@ end
 Particle.velocity = [1 2; 3 4; 5 6; 7 8;
                      1 2; 3 4; 5 6; 7 8];
 
-Particle.stress   = [1 2 3 4; 5 6 7 8;
-                     1 2 3 4; 5 6 7 8;
-                     1 2 3 4; 5 6 7 8;
-                     1 2 3 4; 5 6 7 8;];
+% Particle.stress   = [1 2 3 2; 5 6 7 6;
+%                      1 2 3 2; 5 6 7 6;
+%                      1 2 3 2; 5 6 7 6;
+%                      1 2 3 2; 5 6 7 6;];
+  
+% Particle.stress   = [1 3 2; 5 7 6;
+%                      1 3 2; 5 7 6;
+%                      1 3 2; 5 7 6;
+%                      1 3 2; 5 7 6];
+
+Particle.stress   = [1 5 1 5 1 5 1 5; 3 7 3 7 3 7 3 7; 2 6 2 6 2 6 2 6];
                  
 %% Plot initial condition
 initial_figure = Plot_Initial(Particle.x,Node.x,Cell.size);

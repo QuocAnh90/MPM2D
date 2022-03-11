@@ -36,10 +36,10 @@ xn              = Node.x;                           % Position of nodes
  % Build B matrix
  i            = 1:2:Particle.Node*2-1;
  j            = i+1;
- Particle.B(i,:,1) = Particle.dSx';
- Particle.B(j,:,2) = Particle.dSy';
- Particle.B(i,:,3) = Particle.dSy';
- Particle.B(j,:,4) = Particle.dSx';
+ Particle.B(1,i,:) = Particle.dSx';
+ Particle.B(2,j,:) = Particle.dSy';
+ Particle.B(3,i,:) = Particle.dSy';
+ Particle.B(3,j,:) = Particle.dSx';
  
  %% Compute Cell.Particle: index of particles in each cell (active cell)
  for c =1:CellCount
