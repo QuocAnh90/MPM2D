@@ -27,7 +27,7 @@ inForce     = squeeze(sum(...
                         Particle.B .* repmat(...
                             reshape(...
                                 Particle.stress,size(Particle.stress,1),1,Np),1,Nnp*DOF),1))...
-              .* repmat(Particle.volume,1,Nnp*2);
+              .* repmat(Particle.volume,1,Nnp*2)';
         
 %% Interpolation from particle to grid task
 Node.mass               = accumarray(Particle.CONNECT(:) ,mass                      ,[Nn 1]);    
@@ -43,8 +43,6 @@ for i =1:Nnp
 Node.inForce(:,1)       = Node.inForce(:,1) - accumarray(Particle.CONNECT(:,i)   ,inForce(2*i-1,:)    ,[Nn 1]);
 Node.inForce(:,2)       = Node.inForce(:,2) - accumarray(Particle.CONNECT(:,i)   ,inForce(2*i,:)      ,[Nn 1]);
 end
-
-test = 1;
 
 %% Document the code
 % For calculation of internal force

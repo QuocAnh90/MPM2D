@@ -21,22 +21,22 @@ SolidModel.nu               = 0.3               ;                   % Poison rat
 Physics.gravity             = [0 -10]           ;                   % gravity acceleration
 
 %% Structured Grid input
-Node.CountX                = 6;                % number of nodes in X direction
-Node.CountY                = 5;                % number of nodes in Y direction
-Cell.size(1)               = 0.1;               % size of element in X direction
-Cell.size(2)               = 0.1;               % size of element in Y direction
+Node.CountX                = 33;                % number of nodes in X direction
+Node.CountY                = 14;                % number of nodes in Y direction
+Cell.size(1)               = 0.5;               % size of element in X direction
+Cell.size(2)               = 0.5;               % size of element in Y direction
 % Boundary coordination
-x_min = 0; x_max = 0.5; y_min = 0; y_max = 0.4;
+x_min = 1; x_max = 100; y_min = -100; y_max = 100;
 
 %% Time input
 Time.wavespeed          = sqrt(SolidModel.Young_modul/SolidModel.density);
-Time.finalTime          = 0.001;
+Time.finalTime          = 1;
 Time.timestep           = 0.001;
 RealTime                = 0;
 
 %% Particle input
 Particle.PPC       = 4;                 % Particle Per Cell
-Particle.Count     = 2*Particle.PPC;   % Total number of particle
+Particle.Count     = 24*3*Particle.PPC;   % Total number of particle
 
 %% Grid generation
 [Node,Cell] = Grid_Generation(Node,Cell,x_min,x_max,y_min,y_max);
@@ -51,27 +51,13 @@ Particle.Count     = 2*Particle.PPC;   % Total number of particle
 % Generate particles
 sp=1;
 while sp<Particle.Count+0.0001
-    for i=1:4
-        for j=1:2
-            Particle.x(sp,1:2)= [2*Cell.size(1)+0.5*Particle.size(1)+(j-1)*Particle.size(1) 1*Cell.size(2)+0.5*Particle.size(2)+(i-1)*Particle.size(2)];
+    for i=1:6
+        for j=1:48
+            Particle.x(sp,1:2)= [2*Cell.size(1)+0.5*Particle.size(1)+(j-1)*Particle.size(1) 8*Cell.size(2)+0.5*Particle.size(2)+(i-1)*Particle.size(2)];
             sp=sp+1;
         end
     end
 end
-Particle.velocity = [1 2; 3 4; 5 6; 7 8;
-                     1 2; 3 4; 5 6; 7 8];
-
-% Particle.stress   = [1 2 3 2; 5 6 7 6;
-%                      1 2 3 2; 5 6 7 6;
-%                      1 2 3 2; 5 6 7 6;
-%                      1 2 3 2; 5 6 7 6;];
-  
-% Particle.stress   = [1 3 2; 5 7 6;
-%                      1 3 2; 5 7 6;
-%                      1 3 2; 5 7 6;
-%                      1 3 2; 5 7 6];
-
-Particle.stress   = [1 5 1 5 1 5 1 5; 3 7 3 7 3 7 3 7; 2 6 2 6 2 6 2 6];
                  
 %% Plot initial condition
 initial_figure = Plot_Initial(Particle.x,Node.x,Cell.size);
@@ -105,9 +91,9 @@ open(writerObj2);
  end
 
  %% Generate video of the result
-%     Figure=Plot_Final(Particle,Node,Cell);
-%     frame2 = getframe(Figure);
-%     writeVideo(writerObj2,frame2);
+    Figure=Plot_Final(Particle,Node,Cell);
+    frame2 = getframe(Figure);
+    writeVideo(writerObj2,frame2);
     
     end
     
