@@ -1,4 +1,4 @@
-function [Particle,Cell] = Compute_Interpolator_MPM(Particle,Cell,Node)
+function [Particle,Cell] = Compute_Interpolator_MPM(Particle,Cell,Node,x_test)
 
 %% Input
 xp              = Particle.x;                       % Position of particle

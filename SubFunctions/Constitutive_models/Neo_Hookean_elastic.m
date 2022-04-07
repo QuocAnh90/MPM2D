@@ -11,7 +11,10 @@ Particle.stress(1,:) = Lambda*log(Particle.Jacobian)    +  Mu./Particle.Jacobian
 
 
 Particle.stress(2,:) = Lambda*log(Particle.Jacobian)    +  Mu./Particle.Jacobian.*...
-    (Particle.defgrad (:,2).*Particle.defgrad (:,3) + Particle.defgrad (:,4).*Particle.defgrad (:,4) - 1); 
+    (Particle.defgrad (:,3).*Particle.defgrad (:,3) + Particle.defgrad (:,4).*Particle.defgrad (:,4) - 1); 
 
 Particle.stress(3,:) =              0                   +  Mu./Particle.Jacobian.*...
-    (Particle.defgrad (:,1).*Particle.defgrad (:,2) + Particle.defgrad (:,3).*Particle.defgrad (:,4) - 0); 
+    (Particle.defgrad (:,1).*Particle.defgrad (:,3) + Particle.defgrad (:,2).*Particle.defgrad (:,4) - 0); 
+
+% stress (xx, yy, xy)
+% Deformation gradient  (11, 12, 21, 22)

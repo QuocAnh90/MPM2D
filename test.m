@@ -18,35 +18,28 @@ SolidModel.name = 'Neo_Hookean_Elastic';
 SolidModel.Young_modul      = 1000000           ;                   % Young modulus of solid
 SolidModel.density          = 1050.0            ;                   % solid density
 SolidModel.nu               = 0.3               ;                   % Poison ratio
-Physics.gravity             = [0 -10]           ;                   % gravity acceleration
+Physics.gravity             = [0 0]           ;                   % gravity acceleration
 
 %% Structured Grid input
-Node.CountX                = 13;                % number of nodes in X direction
-Node.CountY                = 13;                % number of nodes in Y direction
-Cell.size(1)               = 0.5;               % size of element in X direction
-Cell.size(2)               = 0.5;               % size of element in Y direction
+Node.CountX                = 6;                % number of nodes in X direction
+Node.CountY                = 5;                % number of nodes in Y direction
+Cell.size(1)               = 0.1;               % size of element in X direction
+Cell.size(2)               = 0.1;               % size of element in Y direction
 % Boundary coordination
-x_min = 1; x_max = 6; y_min = 1; y_max = 6;
+x_min = 0.2; x_max = 0.5; y_min = -100; y_max = 100;
 
 %% Time input
 Time.wavespeed          = sqrt(SolidModel.Young_modul/SolidModel.density);
-Time.finalTime          = 5.00;
-Time.timestep           = 0.0001;
+Time.finalTime          = 0.001;
+Time.timestep           = 0.001;
 RealTime                = 0;
 
 %% Particle input
-Particle.PPC       = 9;                 % Particle Per Cell
-Particle.Count     = 16*Particle.PPC;   % Total number of particle
+Particle.PPC       = 4;                 % Particle Per Cell
+Particle.Count     = 2*Particle.PPC;   % Total number of particle
 
 %% Grid generation
 [Node,Cell] = Grid_Generation(Node,Cell,x_min,x_max,y_min,y_max);
-
-for n=1:Node.Count
-    if Node.x(n,1)<=x_min 
-        Node.Count_BoundaryY = Node.Count_BoundaryY+1;
-        Node.BoundaryY = [Node.BoundaryY n];
-    end
-end
 
 %% Find interacting nodes of each cell
 [Cell,Particle] = ConnectNode(Cell, Node,Particle);
@@ -58,13 +51,27 @@ end
 % Generate particles
 sp=1;
 while sp<Particle.Count+0.0001
-    for i=1:6
-        for j=1:24
-            Particle.x(sp,1:2)= [2*Cell.size(1)+0.5*Particle.size(1)+(j-1)*Particle.size(1) 8*Cell.size(2)+0.5*Particle.size(2)+(i-1)*Particle.size(2)];
+    for i=1:4
+        for j=1:2
+            Particle.x(sp,1:2)= [2*Cell.size(1)+0.5*Particle.size(1)+(j-1)*Particle.size(1) 1*Cell.size(2)+0.5*Particle.size(2)+(i-1)*Particle.size(2)];
             sp=sp+1;
         end
     end
 end
+Particle.velocity = [1 2; 3 4; 5 6; 7 8;
+                     1 2; 3 4; 5 6; 7 8];
+
+% Particle.stress   = [1 2 3 2; 5 6 7 6;
+%                      1 2 3 2; 5 6 7 6;
+%                      1 2 3 2; 5 6 7 6;
+%                      1 2 3 2; 5 6 7 6;];
+  
+% Particle.stress   = [1 3 2; 5 7 6;
+%                      1 3 2; 5 7 6;
+%                      1 3 2; 5 7 6;
+%                      1 3 2; 5 7 6];
+
+Particle.stress   = [1 5 1 5 1 5 1 5; 3 7 3 7 3 7 3 7; 2 6 2 6 2 6 2 6];
                  
 %% Plot initial condition
 initial_figure = Plot_Initial(Particle.x,Node.x,Cell.size);
@@ -72,7 +79,7 @@ initial_figure = Plot_Initial(Particle.x,Node.x,Cell.size);
 %% start the algorithm
 % video
 step = 100;     % number of frame to save
-r=step/5;      % number of frame per second video ~200s
+r=step/20;      % number of frame per second video ~200s
 
 writerObj2           = VideoWriter('BendingBeam.avi');
 writerObj2.FrameRate = r;    % number of frame per second
@@ -85,12 +92,6 @@ open(writerObj2);
  while RealTime<ft+0.0000000001      
      RealTime
      
-     if RealTime > 3.224
-         test = 1;
-     end
-     
-     x_test = Particle.x;
-         
      switch Version
          case 'MPM'
         [Particle] = MPM_solver(SolidModel, Cell, Node, Particle, Time, Physics);
@@ -104,9 +105,9 @@ open(writerObj2);
  end
 
  %% Generate video of the result
-    Figure=Plot_Final(Particle,Node,Cell);
-    frame2 = getframe(Figure);
-    writeVideo(writerObj2,frame2);
+%     Figure=Plot_Final(Particle,Node,Cell);
+%     frame2 = getframe(Figure);
+%     writeVideo(writerObj2,frame2);
     
     end
     

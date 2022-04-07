@@ -18,7 +18,7 @@ Particle.density        = SolidModel.density * ones(Count,1);   % Density
 Particle.velocity       = zeros(Count,2);                       % velocity
 Particle.Gradvelocity   = zeros(Count,4);                       % Gradient velocity
 % Particle.traction       = zeros(Count,2);                     % traction
-Particle.defgrad        = zeros(Count,4);                       % Deformation gradient
+Particle.defgrad        = zeros(Count,4);                       % Deformation gradient  (11, 12, 21, 22)
 Particle.r1             = zeros(Count,2);
 Particle.r2             = zeros(Count,2);
 % Tensor

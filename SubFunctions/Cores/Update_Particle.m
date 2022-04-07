@@ -7,6 +7,7 @@ VelocityX       = Node.velocity(:,1);
 VelocityY       = Node.velocity(:,2);
 dt              = Time.timestep;             % Time step
 
+
 % Update particle's velocity
 Particle.velocity(:,1)      = Particle.velocity(:,1) + sum(Particle.S.*AccelerationX(Particle.CONNECT),2)*dt;   % particle velocity x
 Particle.velocity(:,2)      = Particle.velocity(:,2) + sum(Particle.S.*AccelerationY(Particle.CONNECT),2)*dt;   % particle velocity y
@@ -15,7 +16,28 @@ Particle.velocity(:,2)      = Particle.velocity(:,2) + sum(Particle.S.*Accelerat
 Particle.x(:,1)             = Particle.x(:,1) + sum(Particle.S.*VelocityX(Particle.CONNECT),2)*dt;              % particle position x
 Particle.x(:,2)             = Particle.x(:,2) + sum(Particle.S.*VelocityY(Particle.CONNECT),2)*dt;              % particle position x
 
-% Update particle's velocity gradient
+% %% Re map velocity (MUSL)
+% mp                  = Particle.mass;             % Mass
+% vp                  = Particle.velocity;         % Velocity
+% S                   = Particle.S;                % Shape fucntion (size Np x Nn)
+% Node.momentum(:)    = 0;                         % Nodal Momentum
+% Nnp                 = Particle.Node;             % Number of interacting nodes
+% Np                  = Particle.Count;            % Total number of particles
+% Nn                  = Node.Count;                % Total number of nodes
+% 
+% momentumX   = reshape(S.*repmat(mp.*vp(:,1),1,Nnp)   ,Np*Nnp,1); 
+% momentumY   = reshape(S.*repmat(mp.*vp(:,2),1,Nnp)   ,Np*Nnp,1); 
+% 
+% Node.momentum(:,1)      = accumarray(Particle.CONNECT(:) ,momentumX                 ,[Nn 1]);      
+% Node.momentum(:,2)      = accumarray(Particle.CONNECT(:) ,momentumY                 ,[Nn 1]);  
+% 
+% Node.velocity           = Node.momentum./Node.mass;
+% 
+% ID                      = Node.mass==0;
+% Node.acceleration(ID,:) = 0;
+% Node.velocity(ID,:)     = 0;
+
+%% Update particle's velocity gradient
 Particle.Gradvelocity(:,1)  = sum(Particle.dSx.*VelocityX(Particle.CONNECT),2);                                 % particle velocity gradient xx
 Particle.Gradvelocity(:,2)  = sum(Particle.dSy.*VelocityX(Particle.CONNECT),2);                                 % particle velocity gradient xy
 Particle.Gradvelocity(:,3)  = sum(Particle.dSx.*VelocityY(Particle.CONNECT),2);                                 % particle velocity gradient yx
