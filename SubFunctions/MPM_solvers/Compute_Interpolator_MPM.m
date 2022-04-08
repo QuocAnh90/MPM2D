@@ -1,4 +1,4 @@
-function [Particle,Cell] = Compute_Interpolator_MPM(Particle,Cell,Node,x_test)
+function [Particle,Cell] = Compute_Interpolator_MPM(Particle,Cell,Node)
 
 %% Input
 xp              = Particle.x;                       % Position of particle
@@ -47,3 +47,10 @@ xn              = Node.x;                           % Position of nodes
      Cell.Particle{c}=id_p;
  end
  
+ 
+ function [N,dN]=linearshape(dx,Lx)
+    c1  = (abs(dx)<=Lx);
+    N1 = 1-abs(dx)/Lx; 
+    dN1 = -sign(dx)/Lx;
+    N = N1.*c1; 
+    dN = c1.*dN1;
