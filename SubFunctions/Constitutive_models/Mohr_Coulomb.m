@@ -1,39 +1,45 @@
-function [s_sp]=Mohr_Coulomb(CModel_parameter,dESP,s_sp)
+function Particle=Mohr_Coulomb(SolidModel,Particle,Time)
 
-%Mohr coloum is based on plane strain formulation
-de_sp=zeros(4,1);     % change of strain
-    de_sp(1) = dESP(1,1);
-    de_sp(2) = dESP(2,2);
-    de_sp(3) = 0.0;
-    de_sp(4) = dESP(2,1);
+%% Update particle's velocity strain Rate
+% Formula dESP = (L_sp + L_sp')/2*dt;
+Particle.strainRate(:,1)    = Particle.Gradvelocity(:,1) * Time.timestep;                                   % particle strain rate xx
+Particle.strainRate(:,2)    = Particle.Gradvelocity(:,4) * Time.timestep;                                   % particle strain rate yy
+Particle.strainRate(:,3)    = (Particle.Gradvelocity(:,2)+Particle.Gradvelocity(:,2))/2 * Time.timestep;    % particle strain rate xy
 
-SigP_up=zeros(3,1);
-%------Parameter of the model---------------------
-E = CModel_parameter(1);                         % Young modoulus
-nu = CModel_parameter(2);                        % Poissons ratio
-phi = CModel_parameter(3)*pi/180;                % Friction angle in radian
-psi = CModel_parameter(4)*pi/180;                % Dilation angle in radian
-c = CModel_parameter(5);
+%% Parameter of the model
+E       = SolidModel.Young_modul;                           % Young modoulus
+nu      = SolidModel.nu;                                    % Poissons ratio
+phi     = SolidModel.Friction*pi/180;                       % Friction angle in radian
+psi     = SolidModel.Dilation*pi/180;                       % Dilation angle in radian
+c       = SolidModel.cohesion;
 
-k = (1.0+sin(phi))/(1.0-sin(phi));              % Friction parameter in principal stress state 
-m = (1.0+sin(psi))/(1.0-sin(psi));              % Dilation parameter in principal stress state 
-comp = 2*c*sqrt(k);                             % Uniaxial compressive strength
-PlasPar = [k , comp,  m];                       % Plastic Parameter array
+k       = (1.0+sin(phi))/(1.0-sin(phi));                    % Friction parameter in principal stress state 
+m       = (1.0+sin(psi))/(1.0-sin(psi));                    % Dilation parameter in principal stress state 
+comp    = 2*c*sqrt(k);                                      % Uniaxial compressive strength
+PlasPar = [k , comp,  m];                                   % Plastic Parameter array
 
-%-----------------------------------------Trial step------------------------------------------%
+for p = 1:Particle.Count
+
+%% -----------------------------------------Trial step------------------------------------------%
+% Mohr_Coulomb is based on plane strain formulation
+de_sp    = zeros(4,1);     % change of strain
+de_sp(1) = Particle.strainRate(p,1);
+de_sp(2) = Particle.strainRate(p,2);
+de_sp(3) = 0.0;
+de_sp(4) = Particle.strainRate(p,3);
+SigP_up  = zeros(3,1);
+
 % Elastic matrix
-C=zeros(4,4);                                                                       
+C = zeros(4,4);                                                                       
 	C(1,1) = 1.0 - nu ; C(1,2) = nu		  ; C(1,3) = nu;
 	C(2,1) = nu			; C(2,2) = 1.0 - nu ; C(2,3) = nu;
 	C(3,1) = nu			; C(3,2) = nu		  ; C(3,3) = 1.0 - nu;
     C(4,4) = (1-2*nu);
 	C = E/((1+nu)*(1-2*nu)) * C; 
+dSigma = C*de_sp;    % change of stress
+Sigma  = [Particle.stress(1,p) ; Particle.stress(2,p) ; nu * (Particle.stress(1,p) + Particle.stress(2,p)) ; Particle.stress(3,p)] + dSigma;
 
-
- dSigma=C*de_sp;    % change of stress
- Sigma=[s_sp(1);s_sp(2);nu*(s_sp(1)+s_sp(2));s_sp(3)]+dSigma;
- %------------------------------------Trial step Completed-------------------------------------% 
- %----------------------------------Principal Stress & Angle-----------------------------------%
+%% ----------------------------------Principal Stress & Angle-----------------------------------%
   sig_av = 0.5*(Sigma(1) + Sigma(2));
   sig_hj = sqrt((0.5*(Sigma(1) - Sigma(2)))^2 + Sigma(4)^2);
   
@@ -64,18 +70,17 @@ C=zeros(4,4);
         elseif (Sigma(1) == Sigma(2) &&  Sigma(4) == 0.0) 
             psi = 0.0;
         end
-  %--Principal angle done  ------------------------
-  %----------------------------Principal Stress & Angle Completed---------------------------%  
-  %--- Value of Yield function f = k*sigP1 - sigP3 - comp ---  
-  % PlasPar = [k comp m]
+%--Principal angle done  ------------------------
+
+%% --- Value of Yield function f = k*sigP1 - sigP3 - comp ---  
   f = PlasPar(1)*SigP(1) - SigP(3) - PlasPar(2); % Mohr-Coulomb yield criterion
-  %----------------------------------------------------------
+%----------------------------------------------------------
   
   if (f <= 0)      %elastic condition
       Sigma_up = Sigma;
-        s_sp(1)=Sigma_up(1);
-        s_sp(2)=Sigma_up(2);
-        s_sp(3)=Sigma_up(4);
+        Particle.stress(1,p) = Sigma_up(1);
+        Particle.stress(2,p) = Sigma_up(2);
+        Particle.stress(3,p) = Sigma_up(4);
       
   else             %elaaso_plastic condition
       
@@ -193,21 +198,20 @@ C=zeros(4,4);
         Sigma_up=(A')*SigP_upextend;  
                
         if (ouplP == 2) 
-		    s_sp(1)=Sigma_up(1);
-            s_sp(2)=Sigma_up(3);
-            s_sp(3)=Sigma_up(4);
+		    Particle.stress(1,p) = Sigma_up(1);
+            Particle.stress(2,p) = Sigma_up(3);
+            Particle.stress(3,p) = Sigma_up(4);
 	    elseif (ouplP == 1) 
-		    s_sp(1)=Sigma_up(2);
-            s_sp(2)=Sigma_up(3);
-            s_sp(3)=Sigma_up(4);
+		    Particle.stress(1,p) = Sigma_up(2);
+            Particle.stress(2,p) = Sigma_up(3);
+            Particle.stress(3,p) = Sigma_up(4);
 	    elseif (ouplP == 3) 
-		    s_sp(1)=Sigma_up(1);
-            s_sp(2)=Sigma_up(2);
-            s_sp(3)=Sigma_up(4);
+		    Particle.stress(1,p) = Sigma_up(1);
+            Particle.stress(2,p) = Sigma_up(2);
+            Particle.stress(3,p) = Sigma_up(4);
         end              
   end
-  
-
+end
 
   
 

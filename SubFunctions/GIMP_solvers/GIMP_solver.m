@@ -17,5 +17,5 @@ function [Particle] = GIMP_solver(SolidModel, Cell, Node, Particle, Time, Physic
             case 'Neo_Hookean_Elastic'
                 [Particle]=Neo_Hookean_elastic(SolidModel,Particle); 
             case 'Mohr_Coulomb'
-                [Particle]=Mohr_Coulomb(SolidModel,Particle);
+                [Particle]=Mohr_Coulomb(SolidModel,Particle,Time);
  end        

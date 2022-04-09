@@ -16,6 +16,9 @@ Particle.velocity(:,2)      = Particle.velocity(:,2) + sum(Particle.S.*Accelerat
 Particle.x(:,1)             = Particle.x(:,1) + sum(Particle.S.*VelocityX(Particle.CONNECT),2)*dt;              % particle position x
 Particle.x(:,2)             = Particle.x(:,2) + sum(Particle.S.*VelocityY(Particle.CONNECT),2)*dt;              % particle position x
 
+% Displacement
+Particle.displacement = Particle.x - Particle.x_ini;
+
 % %% Re map velocity (MUSL)
 % mp                  = Particle.mass;             % Mass
 % vp                  = Particle.velocity;         % Velocity
@@ -38,10 +41,10 @@ Particle.x(:,2)             = Particle.x(:,2) + sum(Particle.S.*VelocityY(Partic
 % Node.velocity(ID,:)     = 0;
 
 %% Update particle's velocity gradient
-Particle.Gradvelocity(:,1)  = sum(Particle.dSx.*VelocityX(Particle.CONNECT),2);                                 % particle velocity gradient xx
-Particle.Gradvelocity(:,2)  = sum(Particle.dSy.*VelocityX(Particle.CONNECT),2);                                 % particle velocity gradient xy
-Particle.Gradvelocity(:,3)  = sum(Particle.dSx.*VelocityY(Particle.CONNECT),2);                                 % particle velocity gradient yx
-Particle.Gradvelocity(:,4)  = sum(Particle.dSy.*VelocityY(Particle.CONNECT),2);                                 % particle velocity gradient yy
+Particle.Gradvelocity(:,1)  = sum(Particle.dSx.*VelocityX(Particle.CONNECT),2);     % particle velocity gradient xx
+Particle.Gradvelocity(:,2)  = sum(Particle.dSy.*VelocityX(Particle.CONNECT),2);     % particle velocity gradient xy
+Particle.Gradvelocity(:,3)  = sum(Particle.dSx.*VelocityY(Particle.CONNECT),2);     % particle velocity gradient yx
+Particle.Gradvelocity(:,4)  = sum(Particle.dSy.*VelocityY(Particle.CONNECT),2);     % particle velocity gradient yy
 
 % Gradvelocity = [1 2]  = [xx xy] = [vxdNx vxdNy]
 %                [3 4]  = [yx yy] = [vydNx vydNy]

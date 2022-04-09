@@ -9,12 +9,10 @@ Particle.size(2)        = Cell.size(2)/Particle.PPCY;      % size of particle in
 
 % Scalar
 Particle.volume         = zeros(Count,1);                       % Volume
-Particle.volume_ini     = Particle.volume;
 
 % Vector
 Particle.x              = zeros(Count,2);                       % Position
-% Particle.d              = zeros(Count,2);                     % Displacement
-Particle.x_ini          = Particle.x;                           % initial position
+Particle.displacement   = zeros(Count,2);                       % Displacement
 Particle.density        = SolidModel.density * ones(Count,1);   % Density
 Particle.velocity       = zeros(Count,2);                       % velocity
 Particle.Gradvelocity   = zeros(Count,4);                       % Gradient velocity
@@ -24,7 +22,7 @@ Particle.r1             = zeros(Count,2);
 Particle.r2             = zeros(Count,2);
 
 % Tensor
-% Particle.strain         = zeros(Count,4);                     % strain
+Particle.strainRate     = zeros(Count,3);                     % strain rate (xx, yy, xy)
 Particle.stress         = zeros(3,Count);                       % stress (xx, yy, xy)
 Particle.B              = zeros(3,DOF * Particle.Node,Count);   % B matrix
 
