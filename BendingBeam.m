@@ -2,11 +2,11 @@ close all; clear all;
 % Unit: Newton - seconds - metre
 
 addpath('SubFunctions');
-% addpath('SubFunctions/Cores');
-% addpath('SubFunctions/Constitutive_Models');
-% addpath('SubFunctions/CPDI_solvers');
-% addpath('SubFunctions/MPM_solvers');
-% addpath('SubFunctions/GIMP_solvers');
+addpath('SubFunctions/Cores');
+addpath('SubFunctions/Constitutive_Models');
+addpath('SubFunctions/CPDI_solvers');
+addpath('SubFunctions/MPM_solvers');
+addpath('SubFunctions/GIMP_solvers');
 
 %% Please select the versions of MPM!!!!!!!!!!!!!!!!!
 % Original MPM: 'MPM' or 'GIMP' or 'CPDI'
@@ -77,6 +77,7 @@ while sp<Particle.Count+0.0001
         end
     end
 end
+Particle.x_ini          = Particle.x;                           % initial position
                  
 %% Plot initial condition
 initial_figure = Plot_Initial(Particle.x,Node.x,Cell.size);

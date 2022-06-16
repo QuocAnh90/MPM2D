@@ -30,25 +30,31 @@ SolidModel.Dilation         = 0.0               ;                   % Dilation a
 SolidModel.cohesion         = 0.3               ;                   % cohesion
 
 %% Structured Grid input
-Node.CountX                = 42;                % number of nodes in X direction
-Node.CountY                = 15;                % number of nodes in Y direction
-Cell.size(1)               = 0.5;               % size of element in X direction
-Cell.size(2)               = 0.5;               % size of element in Y direction
+% Node.CountX                = 67;                % number of nodes in X direction
+% Node.CountY                = 27;                % number of nodes in Y direction
+% Cell.size(1)               = 0.1;               % size of element in X direction
+% Cell.size(2)               = 0.1;               % size of element in Y direction
+% % Boundary coordination (symmetry)
+% x_min = 0.1; x_max = 6.5; y_min = 0.2; y_max = 2.5;
 
+Node.CountX                = 134;                % number of nodes in X direction
+Node.CountY                = 54;                % number of nodes in Y direction
+Cell.size(1)               = 0.05;               % size of element in X direction
+Cell.size(2)               = 0.05;               % size of element in Y direction
 % Boundary coordination (symmetry)
-x_min = 0.5; x_max = 20; y_min = 1.0; y_max = 6.5;
+x_min = 0.05; x_max = 6.5; y_min = 0.1; y_max = 2.5;
 
 %% Time input
 Time.wavespeed          = sqrt(SolidModel.Young_modul/SolidModel.density);
-Time.finalTime          = 10.00;
-Time.timestep           = 0.001;
+Time.finalTime          = 5.00;
+Time.timestep           = 0.00005;
 RealTime                = 0;
 
 %% Particle input
 Particle.PPCX      = 2;                                 % Particle Per Cell
 Particle.PPCY      = 2;                                 % Particle Per Cell
 Particle.PPC       = Particle.PPCX * Particle.PPCY;     % Particle Per Cell
-Particle.Count     = 2500*Particle.PPC;                   % Total number of particle
+Particle.Count     = 800*Particle.PPC;                   % Total number of particle
 
 %% Grid generation
 [Node,Cell] = Grid_Generation(Node,Cell,x_min,x_max,y_min,y_max);
@@ -78,8 +84,8 @@ end
 % Generate particles
 sp=1;
 while sp<Particle.Count+0.0001
-    for i=1:20
-        for j=1:20
+    for i=1:80
+        for j=1:40
             Particle.x(sp,1:2)= [1*Cell.size(1)+0.5*Particle.size(1)+(j-1)*Particle.size(1) 2*Cell.size(2)+0.5*Particle.size(2)+(i-1)*Particle.size(2)];
             sp=sp+1;
         end

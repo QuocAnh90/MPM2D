@@ -33,7 +33,7 @@ end
 
 Figure=figure
 % set(Figure, 'visible','off');
-sz = 5;
+sz = 10;
 color = displacement;
 % color = b_sp(:,1);
 scatter(x_sp(:,1),x_sp(:,2),sz,color,'filled');
@@ -45,8 +45,8 @@ hold on
 % end
 grid on
 axis([0,max(LOC(:,1)),0,max(LOC(:,2))]);
-set(gca,'xtick',[0:2*Cell.size(1):max(LOC(:,1))]);
-set(gca,'ytick',[0:2*Cell.size(2):max(LOC(:,2))]);
+set(gca,'xtick',[0:10*Cell.size(1):max(LOC(:,1))]);
+set(gca,'ytick',[0:10*Cell.size(2):max(LOC(:,2))]);
 h=colorbar;
 colormap(jet(256))
 % set(h, 'ytick', [0:0.2:1.2]);
