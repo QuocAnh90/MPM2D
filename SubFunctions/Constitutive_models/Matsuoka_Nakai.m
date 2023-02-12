@@ -1,4 +1,4 @@
-function Particle=Mohr_Coulomb(SolidModel,Particle,Time)
+function Particle=Hyper1(SolidModel,Particle,Time)
 
 %% Update particle's velocity strain Rate
 % Formula dESP = (L_sp + L_sp')/2*dt;
@@ -7,16 +7,28 @@ Particle.strainRate(:,2)    = Particle.Gradvelocity(:,4) * Time.timestep;       
 Particle.strainRate(:,3)    = (Particle.Gradvelocity(:,2)+Particle.Gradvelocity(:,2))/2 * Time.timestep;    % particle strain rate xy
 
 %% Parameter of the model
-E       = SolidModel.Young_modul;                           % Young modoulus
-nu      = SolidModel.nu;                                    % Poissons ratio
-phi     = SolidModel.Friction*pi/180;                       % Friction angle in radian
-psi     = SolidModel.Dilation*pi/180;                       % Dilation angle in radian
-c       = SolidModel.cohesion;
+K       = SolidModel.Bulk_modul;                            % Bulk modoulus
+G       = SolidModel.Shear_modul;                           % Shear modoulus
+
+N0      = SolidModel.N0;                                    % initial state N
+M       = SolidModel.M;                                     % critical state
+M0      = SolidModel.M0;                                    % initial state M
+
+lambda_c    = 20;
+lambda_rho  = 200;
 
 k       = (1.0+sin(phi))/(1.0-sin(phi));                    % Friction parameter in principal stress state 
 m       = (1.0+sin(psi))/(1.0-sin(psi));                    % Dilation parameter in principal stress state 
 comp    = 2*c*sqrt(k);                                      % Uniaxial compressive strength
 PlasPar = [k , comp,  m];                                   % Plastic Parameter array
+
+
+
+
+
+
+
+
 
 for p = 1:Particle.Count
 
@@ -52,7 +64,7 @@ Sigma  = [Particle.stress(1,p) ; Particle.stress(2,p) ; nu * (Particle.stress(1,
 		SigP(3) = SigP(2)  ;  SigP(2) = SigP(1)  ; SigP(1) = Sigma(3);
 	elseif (Sigma(3) > SigP(2) )
 		SigP(3) = SigP(2)  ;  SigP(2) = Sigma(3); 
-  end
+    end
   %-- Sorting done --
   %-- Principal angle ------------------------
         if (Sigma(1) > Sigma(2)  &&  Sigma(4) >= 0.0) 
@@ -161,20 +173,20 @@ Sigma  = [Particle.stress(1,p) ; Particle.stress(2,p) ; nu * (Particle.stress(1,
         
         %--- Region determination and stress update ------- 
         if (t1 > 0.0 && t2 > 0.0)
-% 	    region = 4;
+	    region = 4;
 	    SigP_up = apex;
         elseif (pI_II < 0.0) 
-% 	    region = 2;
+	    region = 2;
 	    SigP_up(1) = t1   + apex(1); % SigP_up = t1*R1 + apex
 	    SigP_up(2) = t1   + apex(2);  % R1 = [1 1 k], direction
 	    SigP_up(3) = t1*k + apex(3);  % vector of line 1
         elseif (pI_III <= 0.0) 
-% 	    region = 1;
+	    region = 1;
 	    SigP_up(1) = SigP(1) - f*Rp(1); % SigP_up = SigP - SiPla
 	    SigP_up(2) = SigP(2) - f*Rp(2); % SiPla is the plastic corrector
 	    SigP_up(3) = SigP(3) - f*Rp(3); % given by f*Rp
         else
-% 	    region = 3;
+	    region = 3;
 	    SigP_up(1) = t2   + apex(1) ; %SigP_up = t2*R2 + apex
 	    SigP_up(2) = t2*k + apex(2) ; % R2 = [1 k k], direction
 	    SigP_up(3) = t2*k + apex(3) ; % vector of line 2
