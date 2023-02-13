@@ -13,8 +13,8 @@ addpath('SubFunctions/GIMP_solvers');
 Version = 'GIMP';
 
 %% Constutitive model input
-% Neo_Hookean_Elastic % Mohr_Coulomb
-SolidModel.name = 'Mohr_Coulomb';
+% Neo_Hookean_Elastic % Mohr_Coulomb & Mohr_Coulomb_rotation
+SolidModel.name = 'Mohr_Coulomb_rotation';
 Physics.gravity             = [0 -10]           ;                   % gravity acceleration
 SolidModel.density          = 1500.0            ;                   % solid density
 

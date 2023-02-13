@@ -18,4 +18,6 @@ function [Particle] = GIMP_solver(SolidModel, Cell, Node, Particle, Time, Physic
                 [Particle]=Neo_Hookean_elastic(SolidModel,Particle); 
             case 'Mohr_Coulomb'
                 [Particle]=Mohr_Coulomb(SolidModel,Particle,Time);
+            case 'Mohr_Coulomb_rotation'
+                [Particle]=Mohr_Coulomb_rotation(SolidModel,Particle,Time);
  end        

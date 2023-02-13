@@ -15,5 +15,9 @@ function [Particle] = MPM_solver(SolidModel, Cell, Node, Particle, Time, Physics
 %% Update constitutive model
  switch SolidModel.name
             case 'Neo_Hookean_Elastic'
-                [Particle]=Neo_Hookean_elastic(SolidModel,Particle);            
+                [Particle]=Neo_Hookean_elastic(SolidModel,Particle); 
+            case 'Mohr_Coulomb'
+                [Particle]=Mohr_Coulomb(SolidModel,Particle,Time);
+            case 'Mohr_Coulomb_rotation'
+                [Particle]=Mohr_Coulomb_rotation(SolidModel,Particle,Time);   
  end        
