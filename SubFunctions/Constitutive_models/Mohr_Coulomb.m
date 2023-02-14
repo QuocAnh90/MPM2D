@@ -23,10 +23,10 @@ for p = 1:Particle.Count
 %% -----------------------------------------Trial step------------------------------------------%
 % Mohr_Coulomb is based on plane strain formulation
 de_sp    = zeros(4,1);     % change of strain
-de_sp(1) = Particle.strainRate(p,1);
-de_sp(2) = Particle.strainRate(p,2);
+de_sp(1) = Particle.strainInc(p,1);
+de_sp(2) = Particle.strainInc(p,2);
 de_sp(3) = 0.0;
-de_sp(4) = Particle.strainRate(p,3);
+de_sp(4) = Particle.strainInc(p,3);
 SigP_up  = zeros(3,1);
 
 % Elastic matrix

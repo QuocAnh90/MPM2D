@@ -2,9 +2,9 @@ function Particle=Mohr_Coulomb_rotation(SolidModel,Particle,Time)
 
 %% Update particle's velocity strain Rate
 % Formula dESP = (L_sp + L_sp')/2*dt;
-Particle.strainRate(:,1)    = Particle.Gradvelocity(:,1) * Time.timestep;                                   % particle strain rate xx
-Particle.strainRate(:,2)    = Particle.Gradvelocity(:,4) * Time.timestep;                                   % particle strain rate yy
-Particle.strainRate(:,3)    = (Particle.Gradvelocity(:,2)+Particle.Gradvelocity(:,2))/2 * Time.timestep;    % particle strain rate xy
+Particle.strainInc(:,1)    = Particle.Gradvelocity(:,1) * Time.timestep;                                   % particle strain rate xx
+Particle.strainInc(:,2)    = Particle.Gradvelocity(:,4) * Time.timestep;                                   % particle strain rate yy
+Particle.strainInc(:,3)    = (Particle.Gradvelocity(:,2)+Particle.Gradvelocity(:,2))/2 * Time.timestep;    % particle strain rate xy
 
 %% Parameter of the model
 E       = SolidModel.Young_modul;                           % Young modoulus
@@ -44,13 +44,13 @@ D = diag(sign(diag(R)));
 R = D*R;
 
 % Rotation strain rate tensor D = R^T D R
-StrainRate_Tensor = R.' * [Particle.strainRate(p,1) Particle.strainRate(p,3); Particle.strainRate(p,3) Particle.strainRate(p,2)] * R;
+StrainRate_Tensor = R.' * [Particle.strainInc(p,1) Particle.strainInc(p,3); Particle.strainInc(p,3) Particle.strainInc(p,2)] * R;
 % Rotation stress tensor Sigma = R^T Sigma R
 Stress_Tensor = R.' * [Particle.stress(1,p) Particle.stress(3,p); Particle.stress(3,p) Particle.stress(2,p)] * R;
 % Reloading strain rate
-Particle.strainRate(p,1) = StrainRate_Tensor(1,1);
-Particle.strainRate(p,2) = StrainRate_Tensor(2,2);
-Particle.strainRate(p,3) = StrainRate_Tensor(1,2);
+Particle.strainInc(p,1) = StrainRate_Tensor(1,1);
+Particle.strainInc(p,2) = StrainRate_Tensor(2,2);
+Particle.strainInc(p,3) = StrainRate_Tensor(1,2);
     
 % Reloading stress
 Particle.stress(1,p) = Stress_Tensor(1,1);
@@ -60,10 +60,10 @@ Particle.stress(3,p) = Stress_Tensor(1,2);
 %% -----------------------------------------Trial step------------------------------------------%
 % Mohr_Coulomb is based on plane strain formulation
 de_sp    = zeros(4,1);     % change of strain
-de_sp(1) = Particle.strainRate(p,1);
-de_sp(2) = Particle.strainRate(p,2);
+de_sp(1) = Particle.strainInc(p,1);
+de_sp(2) = Particle.strainInc(p,2);
 de_sp(3) = 0.0;
-de_sp(4) = Particle.strainRate(p,3);
+de_sp(4) = Particle.strainInc(p,3);
 SigP_up  = zeros(3,1);
 
 % Elastic matrix

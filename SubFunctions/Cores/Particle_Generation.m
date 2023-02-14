@@ -22,7 +22,7 @@ Particle.r1             = zeros(Count,2);
 Particle.r2             = zeros(Count,2);
 
 % Tensor
-Particle.strainRate     = zeros(Count,3);                     % strain rate (xx, yy, xy)
+Particle.strainInc      = zeros(Count,3);                     % strain increment (xx, yy, xy)
 Particle.stress         = zeros(3,Count);                       % stress (xx, yy, xy)
 Particle.B              = zeros(3,DOF * Particle.Node,Count);   % B matrix
 

@@ -1,228 +1,197 @@
-function Particle=Hyper1(SolidModel,Particle,Time)
+function Particle=Matsuoka_Nakai(SolidModel,Particle,Time)
 
 %% Update particle's velocity strain Rate
 % Formula dESP = (L_sp + L_sp')/2*dt;
-Particle.strainRate(:,1)    = Particle.Gradvelocity(:,1) * Time.timestep;                                   % particle strain rate xx
-Particle.strainRate(:,2)    = Particle.Gradvelocity(:,4) * Time.timestep;                                   % particle strain rate yy
-Particle.strainRate(:,3)    = (Particle.Gradvelocity(:,2)+Particle.Gradvelocity(:,2))/2 * Time.timestep;    % particle strain rate xy
+Particle.strainInc(:,1)    = Particle.Gradvelocity(:,1) * Time.timestep;                                   % particle strain increment xx
+Particle.strainInc(:,2)    = Particle.Gradvelocity(:,4) * Time.timestep;                                   % particle strain increment yy
+Particle.strainInc(:,3)    = (Particle.Gradvelocity(:,2)+Particle.Gradvelocity(:,2))/2 * Time.timestep;    % particle strain increment xy
 
 %% Parameter of the model
-K       = SolidModel.Bulk_modul;                            % Bulk modoulus
-G       = SolidModel.Shear_modul;                           % Shear modoulus
+E           = SolidModel.Young_modul;                           % Young's modoulus
+nu          = SolidModel.nu;                                    % Poisson's ratio
 
-N0      = SolidModel.N0;                                    % initial state N
-M       = SolidModel.M;                                     % critical state
-M0      = SolidModel.M0;                                    % initial state M
-
-lambda_c    = 20;
-lambda_rho  = 200;
-
-k       = (1.0+sin(phi))/(1.0-sin(phi));                    % Friction parameter in principal stress state 
-m       = (1.0+sin(psi))/(1.0-sin(psi));                    % Dilation parameter in principal stress state 
-comp    = 2*c*sqrt(k);                                      % Uniaxial compressive strength
-PlasPar = [k , comp,  m];                                   % Plastic Parameter array
+% N           = SolidModel.N;                                     % state variable N
+M           = SolidModel.M;                                     % state variable M
+lambda_c    = SolidModel.lambda_c;                              % Dilatancy parameter
+% Szz         = SolidModel.stressZZ;                              % Stress ZZ
 
 
+Particle.stressZZ       = zeros(Particle.Count,1);                     % Stress out of plane
+Particle.N              = zeros(Particle.Count,1);                     % Dilatancy state variables
 
-
-
-
-
-
-
-for p = 1:Particle.Count
-
-%% -----------------------------------------Trial step------------------------------------------%
-% Mohr_Coulomb is based on plane strain formulation
-de_sp    = zeros(4,1);     % change of strain
-de_sp(1) = Particle.strainRate(p,1);
-de_sp(2) = Particle.strainRate(p,2);
-de_sp(3) = 0.0;
-de_sp(4) = Particle.strainRate(p,3);
-SigP_up  = zeros(3,1);
-
-% Elastic matrix
+% Elastic matrix 2x2
 C = zeros(4,4);                                                                       
 	C(1,1) = 1.0 - nu ; C(1,2) = nu		  ; C(1,3) = nu;
 	C(2,1) = nu			; C(2,2) = 1.0 - nu ; C(2,3) = nu;
 	C(3,1) = nu			; C(3,2) = nu		  ; C(3,3) = 1.0 - nu;
-    C(4,4) = (1-2*nu);
+    C(4,4) = (1-2*nu)/2;
 	C = E/((1+nu)*(1-2*nu)) * C; 
-dSigma = C*de_sp;    % change of stress
-Sigma  = [Particle.stress(1,p) ; Particle.stress(2,p) ; nu * (Particle.stress(1,p) + Particle.stress(2,p)) ; Particle.stress(3,p)] + dSigma;
 
-%% ----------------------------------Principal Stress & Angle-----------------------------------%
-  sig_av = 0.5*(Sigma(1) + Sigma(2));
-  sig_hj = sqrt((0.5*(Sigma(1) - Sigma(2)))^2 + Sigma(4)^2);
+% Elastic matrix 3x3
+D = E/(1+nu)/(1-2*nu)*[ 1-nu nu nu 0 0 0 ...
+                      ; nu 1-nu nu 0 0 0 ...
+                      ; nu nu 1-nu 0 0 0 ...
+                      ; 0 0 0 (1-2*nu)/2 0 0 ...
+                      ; 0 0 0 0 (1-2*nu)/2 0 ...
+                      ; 0 0 0 0 0 (1-2*nu)/2];
+                    
+%% Loop all particles
+for p = 1:Particle.Count
+%     p
+%     if p ==1
+%         Particle.Gradvelocity(p,:)
+%     end
+% Plastic multiplier 
+lambda = 0;
+
+% State variables
+N           = Particle.N(p,1);            % state variable N
+Szz         = Particle.stressZZ(p,1);     % Stress ZZ
+
+
+%% -----------------------------------------Trial step------------------------------------------%
+de_sp    = zeros(4,1);      % strain increment vector 1x4
+de_sp(1) = -Particle.strainInc(p,1);
+de_sp(2) = -Particle.strainInc(p,2);
+de_sp(3) = 0;
+de_sp(4) = -Particle.strainInc(p,3);
+Particle.stress(:,p) = Particle.stress(:,p)*-1;
+
+deps = [de_sp;0;0];         % strain increment vector 1x4
+
+dSigma = C*de_sp;           % stress increment
+Sigma  = [Particle.stress(1,p) ; Particle.stress(2,p) ; Szz ; Particle.stress(3,p)] + dSigma;
+
+%% --- Value of Yield function f = X - (M+N)
+Sigma_Tensor3x3 = [Sigma(1) Sigma(4) 0 ; Sigma(4) Sigma(2) 0 ; 0 0 Sigma(3)];
   
-  SigP=zeros(3,1); 
-  SigP(1) = sig_av + sig_hj;
-  SigP(2) = sig_av - sig_hj;
-  SigP(3) = Sigma(3); % The out-of-plane stress
+I1 = trace(Sigma_Tensor3x3);
+I2 = 0.5*(trace(Sigma_Tensor3x3)^2 - trace(Sigma_Tensor3x3^2));
+I3 = det (Sigma_Tensor3x3);
+X = sqrt (I1*I2/I3 - 9);
+f = X - (M+N);                % Matsuoka Nakai Yield function
 
-  if (Sigma(3) > SigP(1)) 
-		SigP(3) = SigP(2)  ;  SigP(2) = SigP(1)  ; SigP(1) = Sigma(3);
-	elseif (Sigma(3) > SigP(2) )
-		SigP(3) = SigP(2)  ;  SigP(2) = Sigma(3); 
-    end
-  %-- Sorting done --
-  %-- Principal angle ------------------------
-        if (Sigma(1) > Sigma(2)  &&  Sigma(4) >= 0.0) 
-            psi = 0.5*atan(2*Sigma(4)/(Sigma(1)-Sigma(2)));
-        elseif (Sigma(1) < Sigma(2)  &&   Sigma(4) >= 0.0) 
-            psi = 0.5*(pi - atan(2*Sigma(4)/(Sigma(2)-Sigma(1))));
-        elseif (Sigma(1) < Sigma(2)  &&   Sigma(4) < 0.0) 
-            psi = 0.5*(atan(-2*Sigma(4)/(Sigma(2)-Sigma(1))) + pi);
-        elseif (Sigma(1) > Sigma(2)  &&   Sigma(4) < 0.0) 
-            psi = 0.5*(2*pi - atan(-2*Sigma(4)/(Sigma(1)-Sigma(2))));
-        elseif (Sigma(1) == Sigma(2) &&  Sigma(4) > 0.0) 
-            psi = 0.25*pi;
-        elseif (Sigma(1) == Sigma(2) &&  Sigma(4) < 0.0) 
-            psi = 0.75*pi;
-        elseif (Sigma(1) == Sigma(2) &&  Sigma(4) == 0.0) 
-            psi = 0.0;
-        end
-%--Principal angle done  ------------------------
-
-%% --- Value of Yield function f = k*sigP1 - sigP3 - comp ---  
-  f = PlasPar(1)*SigP(1) - SigP(3) - PlasPar(2); % Mohr-Coulomb yield criterion
+% Cut off condition
+if I3 <= 0
+   f = 0;
+   Sigma(1:4) = 0;
+end
+        
+if I1*I2/I3 <= 9
+   f = 0;
+   Sigma(1:4) = 0;
+end
+        
 %----------------------------------------------------------
+
+  if (f > 0)      
+    %% elaso_plastic condition
+      i = 0;
+        while abs(f) > 0.00000000001
+%             i = i + 1
+            
+%             if i > 100
+%                 de_sp
+%             end
+            
+            S = Sigma_Tensor3x3; %Just to simplify notation
+            % Vector B
+            Sigma_Inverse = inv(S);
+            Sigma_Inverse_Dev = Sigma_Inverse - 1/3*eye(3,3)*trace(Sigma_Inverse);
+            Sigma_Inverse_Dev_Vector = [Sigma_Inverse_Dev(1,1); Sigma_Inverse_Dev(2,2); Sigma_Inverse_Dev(3,3); Sigma_Inverse_Dev(1,2); Sigma_Inverse_Dev(1,3); Sigma_Inverse_Dev(2,3)];
+            N_vector = [N/3;N/3;N/3;0;0;0];
+            dQdSigma = -(N_vector + I1 / X * Sigma_Inverse_Dev_Vector);
+            
+            % A
+            A = lambda_c * (M + N) * N;
+            
+            % Derivative
+            dYdI1       = I2/(I3*2*X);
+            dYdI2       = I1/(I3*2*X);
+            dYdI3       = -I1*I2/(I3^2*2*X);
+            
+            dI1dSigma   = eye(3,3);
+            
+            dI2dSigma   = [ S(2,2)+S(3,3)   -2*S(1,2)       -2*S(1,3) ...
+                          ; -2*S(1,2)       S(1,1)+S(3,3)   -2*S(2,3) ...
+                          ; -2*S(1,3)       -2*S(2,3)       S(2,2)+S(1,1)];
+                      
+            dI3dSigma   = [ S(2,2)*S(3,3)-S(2,3)^2          2*(S(2,3)*S(1,3)-S(3,3)*S(1,2)) 2*(S(2,3)*S(1,2)-S(2,2)*S(1,3)) ...
+                          ; 2*(S(2,3)*S(1,3)-S(3,3)*S(1,2)) S(1,1)*S(3,3)-S(1,3)^2          2*(S(1,3)*S(1,2)-S(1,1)*S(2,3)) ...
+                          ; 2*(S(2,3)*S(1,2)-S(2,2)*S(1,3)) 2*(S(1,3)*S(1,2)-S(1,1)*S(2,3)) S(2,2)*S(1,1)-S(1,3)^2];
+            
+            % Tensor 3x3
+            dYdSigma = dYdI1 * dI1dSigma + dYdI2 * dI2dSigma + dYdI3 * dI3dSigma;
+            
+            % Vector
+            dYdSigma = [dYdSigma(1,1) dYdSigma(2,2) dYdSigma(3,3) dYdSigma(1,2) dYdSigma(1,3) dYdSigma(2,3)];
+            
+            dlambda = f / (A + dYdSigma * D * dQdSigma);
+            
+            lambda = lambda + dlambda;
+            
+            % Flow rule           
+            depsp = lambda * dQdSigma;
+            
+            % Update stress
+            depse = deps - depsp;
+            dSigma = C*depse(1:4);           % stress increment
+            Sigma  = [Particle.stress(1,p) ; Particle.stress(2,p) ; Szz ; Particle.stress(3,p)] + dSigma;
+
+            % Update state variables
+            Epsilon_v_plastic = depsp(1) + depsp(2) + depsp(3);
+            N =  Particle.N(p,1) + lambda_c*(M+N)*Epsilon_v_plastic;
+              
+%             if sig(1) <= 10 
+%                 Sigma(1:4) = 0;
+%             end
+%             
+%             if sig(2) <= 10 
+%                 Sigma(1:4) = 0;
+%             end
+%             
+%             if sig(3) <= 10 
+%                 Sigma(1:4) = 0;
+%             end
+            
+            % Recompute yield function
+            % Stress invariants
+            Sigma_Tensor3x3 = [Sigma(1) Sigma(4) 0 ; Sigma(4) Sigma(2) 0 ; 0 0 Sigma(3)];
   
-  if (f <= 0)      %elastic condition
-      Sigma_up = Sigma;
-        Particle.stress(1,p) = Sigma_up(1);
-        Particle.stress(2,p) = Sigma_up(2);
-        Particle.stress(3,p) = Sigma_up(4);
-      
-  else             %elaaso_plastic condition
-      
-     %---- Position of out-of plane or in principal stress vector SigP ----	
-	   if (Sigma(3) == SigP(1)) 
-			ouplP = 1 ; %s1 = 2 ; s2 = 3;
-	   elseif (Sigma(3) == SigP(2)) 
-			ouplP = 2 ; %s1 = 1 ; s2 = 3;
-       elseif (Sigma(3) == SigP(3)) 
-			ouplP = 3 ; %s1 = 1 ; s2 = 2;
-       end 
-	 %-----Positioning done------------------------------------------------          
-     %---- Stress return --------------------------------------------------	     
-        %--- Preliminary parameters ----------------
-        apex = [comp/(k-1.0) comp/(k-1.0) comp/(k-1.0)]'; % Stress coordinate of the criterions apex
-        D = C(1:3,1:3);% Relates to normal stresses
-        
-        den = k*(D(1,1)*m-D(1,3)) - D(3,1)*m + D(3,3); % denominator a'*D*b
-        Rp=zeros(3,1);
-        Rp(1) = (D(1,1)*m-D(1,3))/den; % Rp is the scaled direction of
-        Rp(2) = (D(2,1)*m-D(2,3))/den; % the update direction,
-        Rp(3) = (D(3,1)*m-D(3,3))/den; % Rp = D*b/(a'*D*b) a, b gradient of
-							  % yield surface and plastic potential, respectively.
-        %--Preliminary parameters calculated---------
-        %--Boundary planes --------------------------        
-        SigPapex = SigP - apex; % Vector from predictor stress to the apex
-
-        % Boundary plane between regions I and II
-        NI_II=zeros(3,1);
-        NI_II(1) = Rp(2)*k - Rp(3);   % NI_II = cross(Rp,R1)
-        NI_II(2) = Rp(3)   - Rp(1)*k; % R1 = [1 1 k], direction
-        NI_II(3) = Rp(1)   - Rp(2);   % vector of line 1
-	
-        pI_II = NI_II(1)*SigPapex(1) + NI_II(2)*SigPapex(2) + NI_II(3)*SigPapex(3);
-
-        % Boundary plane between regions I and III
-        NI_III=zeros(3,1);
-        NI_III(1) = Rp(2)*k - Rp(3)*k; % NI_III = cross(Rp,R2)
-        NI_III(2) = Rp(3)   - Rp(1)*k; % R2 = [1 k k], direction
-        NI_III(3) = Rp(1)*k - Rp(2);   % vector of line 2
-	
-        pI_III = NI_III(1)*SigPapex(1) + NI_III(2)*SigPapex(2) + NI_III(3)*SigPapex(3);
-        %--Boundary planes calculated ----------------
-        
-        %--- t-paramters for region determination --
-	    % secondary surface in region II a = [0 k -1], b = [0 m -1]
-        den = k*(D(2,2)*m-D(2,3)) - D(3,2)*m + D(3,3); % denominator a'*D*b
-        Rp2=zeros(3,1);
-        Rp2(1) = (D(1,2)*m-D(1,3))/den; % Rp is the scaled direction of
-        Rp2(2) = (D(2,2)*m-D(2,3))/den; % the update direction,
-        Rp2(3) = (D(3,2)*m-D(3,3))/den; % Rp = D*b/(a'*D*b) a, b gradient of
-							   % yield surface and plastic potential, respectively.	
-        N2=zeros(3,1);
-        N2(1) = Rp(2)*Rp2(3) - Rp(3)*Rp2(2); % N2 = cross(Rp,Rp2)
-        N2(2) = Rp(3)*Rp2(1) - Rp(1)*Rp2(3);
-        N2(3) = Rp(1)*Rp2(2) - Rp(2)*Rp2(1);
-	
-        den_t = N2(1) + N2(2) + k*N2(3); % N2'*R1, R1 = [1 1 k] Direction of line 1
-        % t-parameter of line 1
-        t1 = (N2(1)*SigPapex(1) + N2(2)*SigPapex(2) + N2(3)*SigPapex(3))/den_t;
-
-        % secondary surface in region III a = [k -1 0], b = [m -1 0]
-        den = k*(D(1,1)*m-D(1,2)) - D(2,1)*m + D(2,2); % denominator a'*D*b
-        Rp3=zeros(3,1);
-        Rp3(1) = (D(1,1)*m-D(1,2))/den; % Rp is the scaled direction of
-        Rp3(2) = (D(2,1)*m-D(2,2))/den; % the update direction,
-        Rp3(3) = (D(3,1)*m-D(3,2))/den; % Rp = D*b/(a'*D*b) a, b gradient of
-							   % yield surface and plastic potential, respectively.
-	    N3=zeros(3,1);
-        N3(1) = Rp(2)*Rp3(3) - Rp(3)*Rp3(2); % N3 = cross(Rp,Rp3)
-        N3(2) = Rp(3)*Rp3(1) - Rp(1)*Rp3(3);
-        N3(3) = Rp(1)*Rp3(2) - Rp(2)*Rp3(1);
-	
-        den_t = N3(1) + k*N3(2) + k*N3(3); % N3'*R2, R2 = [1 k k] Direction of line 2
-        % t-parameter of line 2
-        t2 = (N3(1)*(SigP(1)-apex(1)) + N3(2)*(SigP(2)-apex(2)) + N3(3)*(SigP(3)-apex(3)))/den_t;
-        %---t-paramters for region determination calculated -------
-        
-        %--- Region determination and stress update ------- 
-        if (t1 > 0.0 && t2 > 0.0)
-	    region = 4;
-	    SigP_up = apex;
-        elseif (pI_II < 0.0) 
-	    region = 2;
-	    SigP_up(1) = t1   + apex(1); % SigP_up = t1*R1 + apex
-	    SigP_up(2) = t1   + apex(2);  % R1 = [1 1 k], direction
-	    SigP_up(3) = t1*k + apex(3);  % vector of line 1
-        elseif (pI_III <= 0.0) 
-	    region = 1;
-	    SigP_up(1) = SigP(1) - f*Rp(1); % SigP_up = SigP - SiPla
-	    SigP_up(2) = SigP(2) - f*Rp(2); % SiPla is the plastic corrector
-	    SigP_up(3) = SigP(3) - f*Rp(3); % given by f*Rp
-        else
-	    region = 3;
-	    SigP_up(1) = t2   + apex(1) ; %SigP_up = t2*R2 + apex
-	    SigP_up(2) = t2*k + apex(2) ; % R2 = [1 k k], direction
-	    SigP_up(3) = t2*k + apex(3) ; % vector of line 2
-        end                     % Regions and update
-        %---Region determination and stress update completed-       
-        %--- Tranformation matrix A ------------------
-        sin_psi  = sin(psi)  ; cos_psi = cos(psi);
-	    sin_psi2 = sin_psi^2 ; cos_psi2 = cos_psi^2;
-	    sin_cos_psi = sin_psi*cos_psi; sin_2psi=sin(2*psi);
-        
-        if (ouplP == 2) 
-		A=[cos_psi2 0 sin_psi2 sin_cos_psi;0 1 0 0;sin_psi2 0 cos_psi2 -sin_cos_psi;-sin_2psi 0 sin_2psi (cos_psi2-sin_psi2)];
-	    elseif (ouplP == 1) 
-		A=[1 0 0 0;0 cos_psi2 sin_psi2 sin_cos_psi;0 sin_psi2 cos_psi2 -sin_cos_psi;0 -sin_2psi sin_2psi (cos_psi2-sin_psi2)];
-	    elseif (ouplP == 3) 
-		A=[cos_psi2 sin_psi2 0 sin_cos_psi;sin_psi2 cos_psi2 0 -sin_cos_psi;0 0 1 0;-sin_2psi sin_2psi 0 (cos_psi2-sin_psi2)];
-        end 
-
-        %--- Tranformation matrix A calculated ----------
-        SigP_upextend=[SigP_up(1);SigP_up(2);SigP_up(3);0];
-        Sigma_up=(A')*SigP_upextend;  
-               
-        if (ouplP == 2) 
-		    Particle.stress(1,p) = Sigma_up(1);
-            Particle.stress(2,p) = Sigma_up(3);
-            Particle.stress(3,p) = Sigma_up(4);
-	    elseif (ouplP == 1) 
-		    Particle.stress(1,p) = Sigma_up(2);
-            Particle.stress(2,p) = Sigma_up(3);
-            Particle.stress(3,p) = Sigma_up(4);
-	    elseif (ouplP == 3) 
-		    Particle.stress(1,p) = Sigma_up(1);
-            Particle.stress(2,p) = Sigma_up(2);
-            Particle.stress(3,p) = Sigma_up(4);
-        end              
+            I1 = trace(Sigma_Tensor3x3);
+            I2 = 0.5*(trace(Sigma_Tensor3x3)^2 - trace(Sigma_Tensor3x3^2));
+            I3 = det (Sigma_Tensor3x3);
+            X = sqrt (I1*I2/I3 - 9);
+            f = X - (M+N);                % Matsuoka Nakai Yield function
+            
+            if I3 <= 0
+                f = 0;
+                Sigma(1:4) = 0;
+            end
+            
+            if I1*I2/I3 <= 9
+                f = 0;
+                Sigma(1:4) = 0;
+            end
+            
+            % Liquefaction cut-off on p
+            mean = Sigma(1)+Sigma(2)+Sigma(3);         
+            if mean <= 1 
+                Sigma(1:4) = 0;
+                f = 0;
+            end
+        end      
   end
+  
+  %% Out of loop update
+  Particle.stress(1,p) = -Sigma(1);
+  Particle.stress(2,p) = -Sigma(2);
+  Particle.stress(3,p) = -Sigma(4);
+  
+  % State variables
+  Particle.N(p,1) = N;
+  Particle.stressZZ(p,1) = -Sigma(3);
+  
 end
 
   

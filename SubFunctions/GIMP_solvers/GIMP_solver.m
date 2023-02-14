@@ -20,4 +20,6 @@ function [Particle] = GIMP_solver(SolidModel, Cell, Node, Particle, Time, Physic
                 [Particle]=Mohr_Coulomb(SolidModel,Particle,Time);
             case 'Mohr_Coulomb_rotation'
                 [Particle]=Mohr_Coulomb_rotation(SolidModel,Particle,Time);
+            case 'Matsuoka_Nakai'
+                [Particle]=Matsuoka_Nakai(SolidModel,Particle,Time);
  end        

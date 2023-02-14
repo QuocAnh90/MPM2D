@@ -5,6 +5,7 @@ x_sp = Particle.x;
 r1_sp = Particle.r1;
 r2_sp = Particle.r2;
 v_ssp = Particle.velocity;
+s_sp = Particle.stress;
 LOC = Node.x;
 d_sp = Particle.displacement;
 
@@ -17,11 +18,11 @@ displacement = zeros(Count,1);
 % velocity = zeros(Count,1);
 % strain = zeros(Count,1);
 for sp=1:Count
-    displacement(sp) = sqrt(d_sp(sp,1)^2+d_sp(sp,2)^2);
+%     displacement(sp) = sqrt(d_sp(sp,1)^2+d_sp(sp,2)^2);
 %     velocity(sp) = sqrt(v_ssp(sp,1)^2+v_ssp(sp,2)^2);
 %     velocity(sp) = v_ssp(sp,1);
 %     velocity(sp) = v_ssp(sp,2);
-%     strain(sp) = sqrt(e_sp(sp,1)^2+e_sp(sp,2)^2);
+    stress(sp) = s_sp(1,sp);
 end
 
 %  for sp=1:Count
@@ -34,7 +35,7 @@ end
 Figure=figure
 % set(Figure, 'visible','off');
 sz = 10;
-color = displacement;
+color = stress;
 % color = b_sp(:,1);
 scatter(x_sp(:,1),x_sp(:,2),sz,color,'filled');
 hold on

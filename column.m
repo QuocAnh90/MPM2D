@@ -13,8 +13,8 @@ addpath('SubFunctions/GIMP_solvers');
 Version = 'GIMP';
 
 %% Constutitive model input
-% Neo_Hookean_Elastic % Mohr_Coulomb & Mohr_Coulomb_rotation
-SolidModel.name = 'Mohr_Coulomb_rotation';
+% Neo_Hookean_Elastic % Mohr_Coulomb & Mohr_Coulomb_rotation & Matsuoka_Nakai
+SolidModel.name = 'Matsuoka_Nakai';
 Physics.gravity             = [0 -10]           ;                   % gravity acceleration
 SolidModel.density          = 1500.0            ;                   % solid density
 
@@ -22,12 +22,21 @@ SolidModel.density          = 1500.0            ;                   % solid dens
 % SolidModel.Young_modul      = 1000000           ;                   % Young modulus of solid
 % SolidModel.nu               = 0.3               ;                   % Poison ratio
 
-%% Material porperties for Mohr_Coulomb
-SolidModel.Young_modul      = 10000000           ;                   % Young modulus of solid
+% %% Material porperties for Mohr_Coulomb
+% SolidModel.Young_modul      = 10000000          ;                   % Young modulus of solid
+% SolidModel.nu               = 0.3               ;                   % Poison ratio
+% SolidModel.Friction         = 30                ;                   % Friction angle
+% SolidModel.Dilation         = 0.0               ;                   % Dilation angle
+% SolidModel.cohesion         = 0.3               ;                   % cohesion
+
+%% Material porperties for Matsuoka_Nakai
+% State variable generation in Particle generation
+SolidModel.Young_modul      = 1000000           ;                   % Young modulus of solid
 SolidModel.nu               = 0.3               ;                   % Poison ratio
-SolidModel.Friction         = 30                ;                   % Friction angle
-SolidModel.Dilation         = 0.0               ;                   % Dilation angle
-SolidModel.cohesion         = 0.3               ;                   % cohesion
+% SolidModel.N                = -0.2              ;                   % Dilation
+SolidModel.M                = 1.633             ;                   % Friction
+SolidModel.lambda_c         = 1.0               ;                   % lambda_c
+% SolidModel.stressZZ         = 0.0               ;                   % Stress ZZ
 
 %% Structured Grid input
 % Node.CountX                = 67;                % number of nodes in X direction
@@ -81,6 +90,10 @@ end
 % Create variables
 [Particle] = Particle_Generation(Particle,Cell,Node,SolidModel);
 
+%% State variables
+Particle.stressZZ       = zeros(Particle.Count,1);                     % Stress out of plane
+Particle.N              = zeros(Particle.Count,1);                     % Dilatancy state variables
+
 % Generate particles
 sp=1;
 while sp<Particle.Count+0.0001
@@ -94,7 +107,7 @@ end
 Particle.x_ini          = Particle.x;                           % initial position
                  
 %% Plot initial condition
-initial_figure = Plot_Initial(Particle.x,Node.x,Cell.size);
+% initial_figure = Plot_Initial(Particle.x,Node.x,Cell.size);
 
 %% start the algorithm
 % video
