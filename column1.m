@@ -33,7 +33,7 @@ SolidModel.density          = 2000.0            ;                   % solid dens
 % State variable generation in Particle generation
 SolidModel.Young_modul      = 10000000          ;                   % Young modulus of solid
 SolidModel.nu               = 0.3               ;                   % Poison ratio
-SolidModel.N0               = 0.0               ;                   % Initial Dilation
+SolidModel.N0               = -0.2              ;                   % Initial Dilation
 SolidModel.M                = 1.633             ;                   % Friction
 SolidModel.lambda_c         = 1.0               ;                   % lambda_c
 SolidModel.stressZZ         = 0.0               ;                   % Stress ZZ
@@ -124,7 +124,7 @@ initial_figure = Plot_Initial(Particle.x,Node.x,Cell.size);
 step = 100;     % number of frame to save
 r=step/5;      % number of frame per second video ~200s
 
-writerObj2           = VideoWriter('column.avi');
+writerObj2           = VideoWriter('column1.avi');
 writerObj2.FrameRate = r;    % number of frame per second
 open(writerObj2);
 

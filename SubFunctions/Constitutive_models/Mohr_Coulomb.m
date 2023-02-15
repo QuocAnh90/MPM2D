@@ -2,9 +2,9 @@ function Particle=Mohr_Coulomb(SolidModel,Particle,Time)
 
 %% Update particle's velocity strain Rate
 % Formula dESP = (L_sp + L_sp')/2*dt;
-Particle.strainRate(:,1)    = Particle.Gradvelocity(:,1) * Time.timestep;                                   % particle strain rate xx
-Particle.strainRate(:,2)    = Particle.Gradvelocity(:,4) * Time.timestep;                                   % particle strain rate yy
-Particle.strainRate(:,3)    = (Particle.Gradvelocity(:,2)+Particle.Gradvelocity(:,2))/2 * Time.timestep;    % particle strain rate xy
+Particle.strainInc(:,1)    = Particle.Gradvelocity(:,1) * Time.timestep;                                   % particle strain rate xx
+Particle.strainInc(:,2)    = Particle.Gradvelocity(:,4) * Time.timestep;                                   % particle strain rate yy
+Particle.strainInc(:,3)    = (Particle.Gradvelocity(:,2)+Particle.Gradvelocity(:,2))/2 * Time.timestep;    % particle strain rate xy
 
 %% Parameter of the model
 E       = SolidModel.Young_modul;                           % Young modoulus
